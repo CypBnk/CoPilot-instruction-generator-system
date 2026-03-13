@@ -293,5 +293,3 @@ Copy-Item "self-hosted\backend\api_server.py" "." -Force
 - `chore(release): bump version to 2.2.0`
 
 ---
-
-**For comprehensive documentation, see `.ai-instructions/GUIDELINES.md` (878 lines) - this file is a condensed reference for quick onboarding.**
