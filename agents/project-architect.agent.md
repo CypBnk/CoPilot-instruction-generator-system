@@ -136,19 +136,20 @@ User Request
 
 Before delegating anything, collect or confirm the following. If the user provides a detailed prompt, extract what you can and only ask for missing pieces.
 
-| Information          | Source                                    | Fallback         |
-| -------------------- | ----------------------------------------- | ---------------- |
-| Project name         | User input or `package.json` / `.csproj`  | Directory name   |
-| Primary language     | User input or auto-detect                 | Ask              |
-| Framework(s)         | User input or auto-detect                 | Ask              |
-| Project type         | User input (API, web app, library, CLI…)  | Ask              |
-| Package manager      | Auto-detect (`package-lock`, `yarn.lock`) | Language default |
-| Testing framework    | Auto-detect or user input                 | Language default |
-| Deployment target    | User input (Docker, Azure, AWS, bare…)    | Ask              |
-| GitHub Actions       | User input (yes/no)                       | Ask              |
-| Development style    | User input (strict/flexible/enterprise)   | `strict`         |
-| License type         | User input (MIT, Apache-2.0, GPL-3.0…)    | Ask              |
-| Existing conventions | Scan for `.editorconfig`, linters, etc.   | None             |
+| Information          | Source                                       | Fallback         |
+| -------------------- | -------------------------------------------- | ---------------- |
+| Project name         | User input or `package.json` / `.csproj`     | Directory name   |
+| Primary language     | User input or auto-detect                    | Ask              |
+| Framework(s)         | User input or auto-detect                    | Ask              |
+| Project type         | User input (API, web app, library, CLI…)     | Ask              |
+| Package manager      | Auto-detect (`package-lock`, `yarn.lock`)    | Language default |
+| Testing framework    | Auto-detect or user input                    | Language default |
+| Deployment target    | User input (Docker, Azure, AWS, bare…)       | Ask              |
+| GitHub Actions       | User input (yes/no)                          | Ask              |
+| Development style    | User input (strict/flexible/enterprise)      | `strict`         |
+| License type         | User input (MIT, Apache-2.0, GPL-3.0…)       | Ask              |
+| Existing conventions | Scan for `.editorconfig`, linters, etc.      | None             |
+| **Deployment Mode**  | **User input** (`shared-template`/`project`) | **`project`**    |
 
 **If the workspace is empty (new project):** Ask the user for all fields.
 **If the workspace has files:** Auto-detect as much as possible, confirm with the user.
@@ -168,6 +169,9 @@ Save the collected context as a structured block to pass to every sub-agent:
 - **GitHub Actions**: {YES/NO}
 - **Style**: {DEVELOPMENT_STYLE}
 - **License**: {LICENSE_TYPE}
+- **Deployment Mode**: {DEPLOYMENT_MODE}
+  - `shared-template`: Root-level `/agents/` + `/skills/` (GitHub repos, templates, distribution)
+  - `project`: `.github/agents/` + `.github/skills/` (deployed projects, default)
 ```
 
 ---
@@ -217,12 +221,16 @@ Invoke `@structure-builder`:
 
 ```
 Create the complete project scaffold for this project:
-1. .github/ directory structure (Three-Layer Model)
+1. Directory structure (Three-Layer Model OR root-level organization per DEPLOYMENT_MODE)
 2. Repo-root files (.gitignore, README.md, LICENSE, CHANGELOG.md, etc.)
 3. /docs/ folder scaffold
 4. .vscode/ configuration files
 Do NOT generate Copilot instruction content — only create structure and repo-root files.
 Use the naming convention: lowercase-with-hyphens.
+
+DEPLOYMENT MODE: {DEPLOYMENT_MODE}
+- If 'shared-template': Create agent/skill folders at project root (/agents/, /skills/)
+- If 'project': Create folders in .github/ (.github/agents/, .github/skills/) — standard three-layer model
 
 {PROJECT_CONTEXT_BLOCK}
 ```
@@ -232,8 +240,14 @@ Use the naming convention: lowercase-with-hyphens.
 Invoke `@instruction-writer`:
 
 ```
-Generate the content for all instruction files in .github/.
-This includes: copilot-instructions.md, all .instructions.md files,
+Generate the content for all instruction files.
+Files are placed per DEPLOYMENT_MODE:
+
+DEPLOYMENT_MODE: {DEPLOYMENT_MODE}
+- If 'shared-template': Place .instructions.md, .prompt.md, SKILL.md at root-level /instructions/, /prompts/, /skills/
+- If 'project': Place in .github/ (.github/instructions/, .github/prompts/, .github/skills/) — standard three-layer model
+
+Content includes: copilot-instructions.md, all .instructions.md files,
 all SKILL.md files, and all .prompt.md files.
 Follow the project context strictly. Keep instructions concise and actionable.
 No code examples in .instructions.md files — principles and patterns only.
@@ -247,9 +261,14 @@ Security instructions are MANDATORY with applyTo: "**".
 Invoke `@agent-factory`:
 
 ```
-Create all .agent.md files in .github/agents/.
+Create all .agent.md files per DEPLOYMENT_MODE:
+
+DEPLOYMENT_MODE: {DEPLOYMENT_MODE}
+- If 'shared-template': Place agents in /agents/ at project root
+- If 'project': Place agents in .github/agents/ (standard three-layer model)
+
 Each agent must have proper YAML frontmatter with description, tools, and model.
-Configure handoffs between agents where logical workflows exist.
+Configure handoffs between agents to match the file locations (shared-template vs. project).
 Include at minimum: software-engineer, architect, reviewer, debugger.
 Add stack-specific agents as needed.
 
@@ -261,7 +280,12 @@ Add stack-specific agents as needed.
 Invoke `@validator`:
 
 ```
-Validate the complete project structure.
+Validate the complete project structure per DEPLOYMENT_MODE.
+
+DEPLOYMENT_MODE: {DEPLOYMENT_MODE}
+- If 'shared-template': Validate agents/skills at project root, no .github/ structure required
+- If 'project': Validate standard three-layer model in .github/
+
 Run all three validation gates: structural, behavioral, and provenance.
 Return a structured report with ✅ / ⚠️ / ❌ status per file.
 
@@ -380,7 +404,86 @@ PROJECT ROOT
 
 ---
 
-## File Format Standards
+## Deployment Modes
+
+The orchestrator supports two deployment modes, selected during Phase 1. This controls where agents, skills, and instruction files are organized:
+
+### Mode 1: `shared-template` (Root-Level Organization)
+
+**Use case:** GitHub repository templates, Awesome-Copilot distributions, portable package templates.
+
+**Structure:**
+
+```
+project-root/
+├── agents/                          ← Agents at root
+│   ├── software-engineer.agent.md
+│   ├── architect.agent.md
+│   ├── reviewer.agent.md
+│   ├── debugger.agent.md
+│   └── {stack-specific}.agent.md
+├── skills/                          ← Skills at root
+│   ├── write-tests/SKILL.md
+│   ├── code-review/SKILL.md
+│   └── ...
+├── instructions/                    ← Instructions at root
+│   ├── python.instructions.md
+│   ├── testing.instructions.md
+│   ├── security.instructions.md
+│   └── ...
+├── prompts/                         ← Prompts at root
+│   ├── generate-tests.prompt.md
+│   └── ...
+├── copilot-instructions.md          ← Foundation at root
+├── .vscode/
+├── docs/
+├── LICENSE
+├── .gitignore
+└── README.md
+```
+
+**File paths in handoffs:** Agents reference sibling files as `./software-engineer.agent.md`, etc.
+
+---
+
+### Mode 2: `project` (Three-Layer in .github/)
+
+**Use case:** Active development projects, deployed services, monorepos with multiple tools.
+
+**Structure:** (Identical to the Three-Layer Architecture section above)
+
+```
+project-root/
+├── .github/
+│   ├── copilot-instructions.md      ← Foundation in .github/
+│   ├── agents/                      ← Agents in .github/
+│   ├── instructions/                ← Instructions in .github/
+│   ├── prompts/                     ← Prompts in .github/
+│   ├── skills/                      ← Skills in .github/
+│   └── workflows/                   ← CI/CD if GitHub Actions
+├── .vscode/
+├── docs/
+├── src/
+├── LICENSE
+├── .gitignore
+└── README.md
+```
+
+**File paths in handoffs:** Agents reference files as `./../instructions/python.instructions.md`, etc.
+
+---
+
+### Choosing the Right Mode
+
+| Factor               | `shared-template`                                  | `project`                                        |
+| -------------------- | -------------------------------------------------- | ------------------------------------------------ |
+| **Scope**            | Template, distribution, multi-repo                 | Single project, active development               |
+| **Discoverability**  | Agents visible at root of repo                     | Agents in .github/ (less clutter)                |
+| **File location**    | Root-level folders                                 | .github/                                         |
+| **Best for**         | Awesome-Copilot, GitHub templates, shared packages | Deployed projects, monorepos, dev workflows      |
+| **Default behavior** | Not selected by default                            | Selected by default (preserves current behavior) |
+
+---
 
 ### copilot-instructions.md (Foundation)
 

@@ -33,6 +33,13 @@ One command. Seven phases. All delegated to specialist sub-agents.
 
 ## What Gets Generated
 
+The system generates a complete Copilot instruction setup, organized per the selected **deployment mode**:
+
+### Deployment Mode: `project` (Default)
+
+**Best for:** Active development projects, deployed services, monorepos.  
+**Location:** `.github/` directory (three-layer model).
+
 ```text
 your-project/
 ├── .github/
@@ -56,7 +63,54 @@ your-project/
     └── ARCHITECTURE.md                  # Auto-generated project overview
 ```
 
+### Deployment Mode: `shared-template`
+
+**Best for:** GitHub repository templates, Awesome-Copilot distributions, portable packages.  
+**Location:** Root-level folders for maximum discoverability.
+
+```text
+your-project/
+├── copilot-instructions.md              # Repository-wide Copilot rules (at root)
+├── agents/                              # Agents at root level
+│   ├── software-engineer.agent.md
+│   ├── architect.agent.md
+│   ├── reviewer.agent.md
+│   ├── debugger.agent.md
+│   └── {stack-specific}.agent.md
+├── instructions/                        # Instructions at root level
+│   ├── {language}.instructions.md
+│   └── security.instructions.md
+├── prompts/                             # Prompts at root level
+│   └── {workflow}.prompt.md
+├── skills/                              # Skills at root level
+│   └── {capability}/SKILL.md
+├── .gitignore
+├── .editorconfig
+└── docs/
+    └── ARCHITECTURE.md
+```
+
 Output adapts to your detected stack. A Python Flask project gets different agents, instructions, and rules than a React + Node monorepo.
+
+## Deployment Modes
+
+The system supports two deployment modes, selected during project scaffolding. Choose the mode that best fits your use case:
+
+| Aspect                       | `project` (Default)                                                               | `shared-template`                                         |
+| ---------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| **Use case**                 | Active development projects, deployed services                                    | GitHub templates, Awesome-Copilot distributions           |
+| **Folder structure**         | Organized in `.github/`                                                           | At project root                                           |
+| **Best for discoverability** | Development workflows                                                             | Template distribution                                     |
+| **File paths**               | `.github/agents/`, `.github/instructions/`, `.github/skills/`, `.github/prompts/` | `agents/`, `instructions/`, `skills/`, `prompts/` at root |
+| **Validation checklist**     | Checks `.github/` structure                                                       | Checks root-level structure                               |
+| **Handoff references**       | Relative paths like `./../instructions/`                                          | Relative paths like `./software-engineer.agent.md`        |
+
+**`project` mode** preserves the original three-layer model — ideal for most projects.  
+**`shared-template` mode** elevates agents and skills to the root level — ideal for distribution.
+
+Both modes generate identical instruction content and agent logic; only file placement differs.
+
+---
 
 ## Repository Structure
 
@@ -113,7 +167,7 @@ Output adapts to your detected stack. A Python Flask project gets different agen
    @project-architect Bootstrap this project
    ```
 
-The system detects your stack, creates the full `.github/` structure, and validates the output — all in one pass.
+The system detects your stack, asks you to select a deployment mode (defaults to `project`), creates the full structure, and validates the output — all in one pass.
 
 ### Alternative: Standalone Skill
 
@@ -180,6 +234,10 @@ Contributions are welcome. When adding or modifying agents:
 3. Run `@validator` against your changes before submitting
 4. Include attribution headers for any adapted community content
 
+## Changelog
+
+For a detailed history of changes, features, and improvements, see [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
-[MIT](LICENSE) — MahoForgeJo
+[MIT](LICENSE) — Github: CypBnk / Codeberg: MaHo_CB

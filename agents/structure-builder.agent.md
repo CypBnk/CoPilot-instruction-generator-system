@@ -15,15 +15,49 @@ You are a **Structure Builder** specialist. You create the full project scaffold
 ## Rules
 
 1. **Never overwrite existing files** — check before creating. If a file exists, skip it and report that it was preserved.
-2. **Follow the Three-Layer Model** — Foundation, Specialists, Capabilities.
-3. **Lowercase-with-hyphens** for all filenames in `.github/`.
+2. **Follow the deployment mode** — If `shared-template`, create at root level. If `project`, create in `.github/`.
+3. **Lowercase-with-hyphens** for all filenames.
 4. **Correct extensions**: `.agent.md`, `.instructions.md`, `.prompt.md`, `SKILL.md`.
 5. **Create directories recursively** — ensure parent directories exist.
 6. **Respect user-edit markers** — if `<!-- USER-EDIT-START -->` / `<!-- USER-EDIT-END -->` markers exist in a file, preserve that section.
 
-## Scaffold: .github/ Directory (Empty Placeholders)
+## Deployment Mode Configuration
+
+Check the `DEPLOYMENT_MODE` field from the project context:
+
+- **If `shared-template`**: Create `/agents/`, `/skills/`, `/instructions/`, `/prompts/` at project root
+- **If `project`** (default): Create `.github/agents/`, `.github/skills/`, `.github/instructions/`, `.github/prompts/`
+
+All other scaffolding (repo-root files, docs, .vscode/) is identical regardless of mode.
+
+## Scaffold: Directory Structure (Mode-Dependent)
 
 Create these as empty files (content is added by other sub-agents):
+
+### For `shared-template` Mode (Root-Level):
+
+**Always created:**
+
+- `agents/software-engineer.agent.md`
+- `agents/architect.agent.md`
+- `agents/reviewer.agent.md`
+- `agents/debugger.agent.md`
+- `instructions/{primary-language}.instructions.md`
+- `instructions/testing.instructions.md`
+- `instructions/documentation.instructions.md`
+- `instructions/security.instructions.md`
+- `instructions/performance.instructions.md`
+- `instructions/code-review.instructions.md`
+- `prompts/generate-tests.prompt.md`
+- `prompts/explain-code.prompt.md`
+- `prompts/generate-docs.prompt.md`
+- `skills/write-tests/SKILL.md`
+- `skills/code-review/SKILL.md`
+- `skills/generate-docs/SKILL.md`
+- `skills/debug-issue/SKILL.md`
+- `copilot-instructions.md` (at root)
+
+### For `project` Mode (Three-Layer in .github/):
 
 **Always created:**
 
@@ -46,13 +80,13 @@ Create these as empty files (content is added by other sub-agents):
 - `.github/skills/generate-docs/SKILL.md`
 - `.github/skills/debug-issue/SKILL.md`
 
-**Conditionally created:**
+**Conditionally created (both modes):**
 
-- `.github/agents/{framework-specific}.agent.md` — when framework detected
-- `.github/skills/setup-component/SKILL.md` — for frontend/component projects
-- `.github/skills/refactor-code/SKILL.md` — for large/legacy codebases
-- `.github/workflows/copilot-setup-steps.yml` — only if GitHub Actions = yes
-- `.github/instructions/{secondary-language}.instructions.md` — for multi-language projects
+- `{agent-type}.agent.md` — when framework detected
+- `{secondary-language}.instructions.md` — for multi-language projects
+- `setup-component/SKILL.md` — for frontend/component projects
+- `refactor-code/SKILL.md` — for large/legacy codebases
+- `.github/workflows/copilot-setup-steps.yml` — only if GitHub Actions = yes (project mode only)
 
 ## Scaffold: Repo-Root Files (Content Generated)
 

@@ -16,11 +16,44 @@ You are a **Validator** specialist. You inspect the complete project structure a
 
 Execute all three gates in order. ALL must pass for the scaffolding to be considered complete. Report every check individually.
 
+**Important:** Gate 1 checklist depends on `DEPLOYMENT_MODE` from the project context. Validate the correct structure for the selected mode.
+
 ---
 
-### Gate 1: Structural Validation
+### Gate 1: Structural Validation (Mode-Dependent)
 
-Check that all required files and directories exist:
+Check that all required files and directories exist. The checks differ based on `DEPLOYMENT_MODE`:
+
+#### For `shared-template` Mode (Root-Level Structure):
+
+**Root-Level Directories:**
+
+- [ ] `agents/` directory exists with at least 4 agent files
+- [ ] `instructions/` directory exists with at least 5 instruction files
+- [ ] `instructions/security.instructions.md` exists (mandatory)
+- [ ] `skills/` directory exists with at least 3 skill folders
+- [ ] `prompts/` directory exists with at least 2 prompt files
+- [ ] `copilot-instructions.md` exists at root (mandatory)
+
+**Repo-Root Files:**
+
+- [ ] `.gitignore` exists and is non-empty
+- [ ] `README.md` exists and is non-empty
+- [ ] `LICENSE` exists and is non-empty
+- [ ] `CHANGELOG.md` exists
+- [ ] `.editorconfig` exists
+- [ ] `CONTRIBUTING.md` exists
+- [ ] `CODE_OF_CONDUCT.md` exists
+- [ ] `SECURITY.md` exists
+
+**Documentation & VS Code:**
+
+- [ ] `docs/` directory exists with `architecture.md`
+- [ ] `.vscode/settings.json` exists with Copilot settings enabled
+
+---
+
+#### For `project` Mode (Three-Layer in .github/):
 
 **`.github/` Directory:**
 
@@ -43,24 +76,21 @@ Check that all required files and directories exist:
 - [ ] `CODE_OF_CONDUCT.md` exists
 - [ ] `SECURITY.md` exists
 
-**Documentation:**
+**Documentation & VS Code:**
 
-- [ ] `docs/` directory exists
-- [ ] `docs/architecture.md` exists
+- [ ] `docs/` directory exists with `architecture.md`
+- [ ] `.vscode/settings.json` exists with Copilot settings enabled
 
-**VS Code:**
+---
 
-- [ ] `.vscode/settings.json` exists
-- [ ] `.vscode/settings.json` contains `"github.copilot.chat.codeGeneration.useInstructionFiles": true`
+**Naming Conventions (Both Modes):**
 
-**Naming Conventions:**
-
-- [ ] All filenames in `.github/` use lowercase-with-hyphens
+- [ ] All filenames use lowercase-with-hyphens
 - [ ] Correct extensions used: `.agent.md`, `.instructions.md`, `.prompt.md`, `SKILL.md`
 - [ ] No spaces in any filenames
 - [ ] SKILL.md `name` field matches containing folder name
 
-**Optional:**
+**Optional (Both Modes):**
 
 - [ ] `AGENTS.md` exists in project root (if user opted in)
 
